@@ -11,17 +11,19 @@ router.post('/', (req, res) => {
                 res.status(201).json(post);
             })
             .catch(error => {
-                console.log(error);
                 res.status(500).json({ error: "There was an error while saving the post to the database" });
             });
     }
     
 });
 
-router.post('/:id/comments', (req, res) => {
+router.post('/:apple/comments', (req, res) => {
+    console.log(req.params);
     if (!req.body.text) {
         res.status(400).json({ errorMessage: "Please provide text for the comment." })
     } else {
+        req.body.post_id = req.params.apple;
+        console.log(req.body);
         db.insertComment(req.body)
             .then(ids => {
                 if (ids) {
@@ -31,7 +33,6 @@ router.post('/:id/comments', (req, res) => {
                 }
             })
             .catch(error => {
-                console.log(error);
                 res.status(500).json({ error: "There was an error while saving the comment to the database" });
             });
     }
@@ -39,7 +40,7 @@ router.post('/:id/comments', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    db.find(req.query)
+    db.find()
         .then(posts => {
             res.status(200).json(posts);
         })
@@ -82,7 +83,6 @@ router.get('/:id/comments', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const id = await db.remove(req.params.id);
-
         if (id) {
             res.status(200).json(id);
         } else {
@@ -92,6 +92,22 @@ router.delete('/:id', async (req, res) => {
         console.log(err);
         res.status(500).json({ error: "The post could not be removed" });
     };
+});
+
+router.put('/:id', (req, res) => {
+    if (!req.body.title || !req.body.contents) {
+        res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+    } else {
+        db.update(req.body)
+            .then(post => {
+                res.status(200).json(post);
+            })
+            .catch(error => {
+                console.log(error);
+                res.status(500).json({ error: "The post information could not be modified." });
+            });
+    }
+    
 });
 
 
